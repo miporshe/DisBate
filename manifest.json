@@ -1,7 +1,7 @@
 {
   "name": "Audio Transcriber Pro",
   "short_name": "Transcriber",
-  "description": "Транскрибация аудио в текст прямо в браузере",
+  "description": "Транскрибация аудио в текст через Hugging Face API",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#667eea",
