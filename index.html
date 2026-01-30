@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Audio Transcriber Pro</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎤</text></svg>">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 25px;
+            font-size: 28px;
+        }
+        .logo { 
+            font-size: 40px; 
+            color: #667eea;
+            margin-right: 15px;
+        }
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            margin: 25px 0;
+            cursor: pointer;
+            transition: all 0.3s;
+            touch-action: manipulation;
+        }
+        .upload-area.active {
+            background: #f8f9ff;
+            border-color: #764ba2;
+        }
+        .upload-icon { 
+            font-size: 50px; 
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+        .upload-text {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        .file-info {
+            font-size: 14px;
+            color: #888;
+        }
+        #fileInput { display: none; }
+        .settings {
+            background: #f8f9ff;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+        }
+        select, button {
+            width: 100%;
+            padding: 16px;
+            margin: 10px 0;
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            font-size: 16px;
+            font-family: inherit;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+        select { background: white url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23667eea' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e") no-repeat right 15px center; background-size: 20px; }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        button:active {
+            transform: scale(0.98);
+        }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+        .progress-container {
+            height: 20px;
+            background: #eee;
+            border-radius: 10px;
+            margin: 20px 0;
+            overflow: hidden;
+            display: none;
+        }
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.3s;
+        }
+        .result-area {
+            display: none;
+            margin-top: 25px;
+            padding: 20px;
+            background: #f8f9ff;
+            border-radius: 15px;
+        }
+        textarea {
+            width: 100%;
+            min-height: 200px;
+            max-height: 400px;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            font-size: 16px;
+            font-family: 'Courier New', monospace;
+            resize: vertical;
+            margin-bottom: 15px;
+        }
+        .action-btn {
+            background: #28a745;
+            margin: 5px 0;
+        }
+        .action-btn.secondary {
+            background: #17a2b8;
+        }
+        .status-message {
+            text-align: center;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 12px 0;
+            font-size: 15px;
+            display: none;
+        }
+        .status-success { background: #d4edda; color: #155724; }
+        .status-error { background: #f8d7da; color: #721c24; }
+        .status-info { background: #d1ecf1; color: #0c5460; }
+        footer {
+            text-align: center;
+            margin-top: 25px;
+            color: #666;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        .instructions {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            font-size: 14px;
+            border-left: 4px solid #ffc107;
+        }
+        .api-section {
+            background: #e7f5ff;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            border-left: 4px solid #339af0;
+        }
+        .api-section input {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-family: monospace;
+        }
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+                margin: 10px;
+            }
+            h1 { font-size: 24px; }
+            .upload-area { padding: 20px; }
+            select, button { padding: 14px; }
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .button-group button {
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><i class="fas fa-microphone-alt logo"></i> Audio Transcriber Pro</h1>
+        
+        <div class="instructions">
+            <strong>🎯 Как использовать:</strong><br>
+            1. Выберите аудио/видео файл (MP3, WAV, MP4)<br>
+            2. Нажмите "НАЧАТЬ ОБРАБОТКУ"<br>
+            3. Получите текст и скачайте файл<br>
+            4. На телефоне: добавьте на главный экран!
+        </div>
+        
+        <div class="upload-area" id="uploadArea">
+            <i class="fas fa-cloud-upload-alt upload-icon"></i>
+            <div class="upload-text">Нажмите или перетащите файл</div>
+            <div class="file-info">MP3, WAV, M4A, MP4 (до 100MB)</div>
+            <input type="file" id="fileInput" accept=".mp3,.wav,.m4a,.mp4,.ogg,.flac,.avi,.mov">
+        </div>
+        
+        <div class="settings">
+            <div class="api-section" id="apiSection">
+                <strong><i class="fas fa-key"></i> API Настройки:</strong><br>
+                <small>Оставьте пустым для демо-режима</small>
+                <input type="text" id="apiUrl" placeholder="URL вашего сервера (например: https://ваш-сервер.ру/api/transcribe)">
+                <input type="text" id="apiToken" placeholder="API токен (если нужен)">
+            </div>
+            
+            <label for="model"><strong>Качество распознавания:</strong></label>
+            <select id="model">
+                <option value="tiny">⚡ Быстрое (tiny)</option>
+                <option value="small" selected>🎯 Точное (small)</option>
+                <option value="medium">🏆 Максимальное (medium)</option>
+                <option value="large">🏆 Лучшее (large)</option>
+            </select>
+            
+            <label for="language"><strong>Язык:</strong></label>
+            <select id="language">
+                <option value="ru" selected>🇷🇺 Русский</option>
+                <option value="en">🇺🇸 Английский</option>
+                <option value="uk">🇺🇦 Украинский</option>
+                <option value="de">🇩🇪 Немецкий</option>
+                <option value="fr">🇫🇷 Французский</option>
+                <option value="">🌍 Автоопределение</option>
+            </select>
+        </div>
+        
+        <button id="processBtn">
+            <i class="fas fa-play"></i> НАЧАТЬ ОБРАБОТКУ
+        </button>
+        
+        <div class="progress-container" id="progressContainer">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+        
+        <div class="status-message" id="statusMessage"></div>
+        
+        <div class="result-area" id="resultArea">
+            <h3><i class="fas fa-file-alt"></i> Результат:</h3>
+            <textarea id="resultText" readonly placeholder="Здесь появится распознанный текст..."></textarea>
+            
+            <div class="button-group">
+                <button class="action-btn" id="downloadBtn">
+                    <i class="fas fa-download"></i> Скачать TXT
+                </button>
+                <button class="action-btn secondary" id="structuredBtn">
+                    <i class="fas fa-code"></i> Отчет DOC
+                </button>
+            </div>
+            
+            <button class="action-btn" id="copyBtn" style="background: #6c757d; margin-top: 10px;">
+                <i class="fas fa-copy"></i> Копировать текст
+            </button>
+        </div>
+        
+        <footer>
+            <p><strong>Audio Transcriber Pro v1.0</strong></p>
+            <p>Использует OpenAI Whisper • Работает в браузере</p>
+            <p><i class="fas fa-mobile-alt"></i> Для добавления на главный экран: Поделиться → "На экран 'Домой'"</p>
+            <p style="margin-top: 10px; font-size: 12px; color: #999;">
+                <i class="fas fa-info-circle"></i> Демо-режим. Для реальной работы настройте API
+            </p>
+        </footer>
+    </div>
+
+    <script>
+        // Элементы интерфейса
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const processBtn = document.getElementById('processBtn');
+        const resultText = document.getElementById('resultText');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const structuredBtn = document.getElementById('structuredBtn');
+        const copyBtn = document.getElementById('copyBtn');
+        let selectedFile = null;
+        
+        // Показать сообщение
+        function showMessage(text, type = 'info') {
+            const msg = document.getElementById('statusMessage');
+            msg.textContent = text;
+            msg.className = `status-message status-${type}`;
+            msg.style.display = 'block';
+            setTimeout(() => {
+                if (msg.textContent === text) {
+                    msg.style.display = 'none';
+                }
+            }, 5000);
+        }
+        
+        // Скрыть сообщение
+        function hideMessage() {
+            document.getElementById('statusMessage').style.display = 'none';
+        }
+        
+        // Обработка выбора файла
+        function handleFileSelect(file) {
+            if (file.size > 100 * 1024 * 1024) {
+                showMessage('Файл слишком большой (максимум 100MB)', 'error');
+                return;
+            }
+            
+            selectedFile = file;
+            uploadArea.innerHTML = `
+                <i class="fas fa-check-circle upload-icon" style="color:#28a745"></i>
+                <div class="upload-text">${file.name}</div>
+                <div class="file-info">${(file.size / (1024*1024)).toFixed(2)} MB • ${file.type || 'аудио/видео'} • Готов к обработке</div>
+            `;
+            showMessage('✅ Файл выбран. Нажмите "НАЧАТЬ ОБРАБОТКУ"', 'success');
+        }
+        
+        // Drag & Drop
+        uploadArea.addEventListener('click', () => fileInput.click());
+        
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('active');
+        });
+        
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('active');
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('active');
+            if (e.dataTransfer.files.length) {
+                fileInput.files = e.dataTransfer.files;
+                handleFileSelect(e.dataTransfer.files[0]);
+            }
+        });
+        
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length) {
+                handleFileSelect(e.target.files[0]);
+            }
+        });
+        
+        // Обработка аудио
+        processBtn.addEventListener('click', async () => {
+            if (!selectedFile) {
+                showMessage('❌ Сначала выберите файл', 'error');
+                return;
+            }
+            
+            const model = document.getElementById('model').value;
+            const language = document.getElementById('language').value;
+            const apiUrl = document.getElementById('apiUrl').value.trim();
+            const apiToken = document.getElementById('apiToken').value.trim();
+            
+            // Показываем прогресс
+            processBtn.disabled = true;
+            processBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ОБРАБОТКА...';
+            document.getElementById('progressContainer').style.display = 'block';
+            const progressBar = document.getElementById('progressBar');
+            
+            // Имитация прогресса
+            let progress = 0;
+            const progressInterval = setInterval(() => {
+                progress += Math.random() * 10;
+                if (progress > 90) progress = 90;
+                progressBar.style.width = `${progress}%`;
+            }, 300);
+            
+            showMessage('⏳ Обработка файла... Это может занять несколько минут', 'info');
+            
+            try {
+                let resultTextContent = '';
+                
+                // ЕСЛИ УКАЗАН API URL - используем реальный API
+                if (apiUrl) {
+                    showMessage('📡 Подключаюсь к серверу...', 'info');
+                    
+                    const formData = new FormData();
+                    formData.append('audio', selectedFile);
+                    formData.append('model', model);
+                    formData.append('language', language);
+                    
+                    const headers = {};
+                    if (apiToken) {
+                        headers['Authorization'] = `Bearer ${apiToken}`;
+                    }
+                    
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        body: formData,
+                        headers: headers
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`Ошибка сервера: ${response.status} - ${await response.text()}`);
+                    }
+                    
+                    const data = await response.json();
+                    resultTextContent = data.text || data.transcription || JSON.stringify(data, null, 2);
+                    
+                } else {
+                    // ДЕМО-РЕЖИМ
+                    await new Promise(resolve => setTimeout(resolve, 3000));
+                    
+                    // Пример результата с улучшенным текстом
+                    resultTextContent = `[ДЕМО-РЕЖИМ - РЕЗУЛЬТАТ ТРАНСКРИБАЦИИ]
+
+Файл: "${selectedFile.name}"
+Дата обработки: ${new Date().toLocaleDateString('ru-RU')}
+Модель: ${model.toUpperCase()}
+Язык: ${language || 'автоопределение'}
+
+📋 РАСПОЗНАННЫЙ ТЕКСТ:
+
+Добрый день! Сегодня мы обсуждаем важные темы цифровой трансформации.
+
+Основные направления:
+1. Внедрение искусственного интеллекта
+2. Автоматизация бизнес-процессов
+3. Облачные технологии
+4. Аналитика данных
+
+Ключевые выводы:
+• Цифровизация увеличивает эффективность на 40-60%
+• Важно обучать сотрудников новым технологиям
+• Поэтапное внедрение дает лучшие результаты
+
+Рекомендации:
+- Начните с аудита текущих процессов
+- Определите приоритетные направления
+- Выберите пилотный проект
+- Измеряйте результаты на каждом этапе
+
+💡 Помните: успешная трансформация требует времени, но окупается многократно.
+
+Это демонстрация работы транскрибатора. Для реальной обработки настройте API сервер.
+
+---
+Audio Transcriber Pro | ${new Date().getFullYear()} | Демо-версия`;
+                }
+                
+                // Показываем результат
+                clearInterval(progressInterval);
+                progressBar.style.width = '100%';
+                
+                setTimeout(() => {
+                    resultText.value = resultTextContent;
+                    document.getElementById('resultArea').style.display = 'block';
+                    showMessage('✅ Обработка завершена!', 'success');
+                    processBtn.disabled = false;
+                    processBtn.innerHTML = '<i class="fas fa-play"></i> НАЧАТЬ ОБРАБОТКУ';
+                    document.getElementById('progressContainer').style.display = 'none';
+                    progressBar.style.width = '0%';
+                    
+                    // Прокручиваем к результату
+                    document.getElementById('resultArea').scrollIntoView({ behavior: 'smooth' });
+                }, 500);
+                
+            } catch (error) {
+                clearInterval(progressInterval);
+                showMessage(`❌ Ошибка: ${error.message}`, 'error');
+                processBtn.disabled = false;
+                processBtn.innerHTML = '<i class="fas fa-play"></i> НАЧАТЬ ОБРАБОТКУ';
+                document.getElementById('progressContainer').style.display = 'none';
+                progressBar.style.width = '0%';
+                console.error('Ошибка обработки:', error);
+            }
+        });
+        
+        // Скачать текст как TXT
+        downloadBtn.addEventListener('click', () => {
+            const text = resultText.value;
+            if (!text.trim()) {
+                showMessage('Нет текста для скачивания', 'error');
+                return;
+            }
+            
+            const filename = `transcription_${selectedFile ? selectedFile.name.replace(/\.[^/.]+$/, "") : new Date().toISOString().slice(0,10)}.txt`;
+            const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showMessage('📥 Файл скачивается...', 'success');
+        });
+        
+        // Структурированный отчет
+        structuredBtn.addEventListener('click', () => {
+            const text = resultText.value;
+            if (!text.trim()) {
+                showMessage('Нет текста для структурирования', 'error');
+                return;
+            }
+            
+            // Создаем структурированный отчет
+            const structured = `==============================================
+📋 СТРУКТУРИРОВАННЫЙ ОТЧЕТ
+==============================================
+Файл: ${selectedFile ? selectedFile.name : 'Неизвестный файл'}
+Дата: ${new Date().toLocaleDateString('ru-RU')}
+Время: ${new Date().toLocaleTimeString('ru-RU')}
+Длина текста: ${text.length} символов, ${text.split(/\s+/).length} слов
+==============================================
+
+${text}
+
+==============================================
+📊 СТАТИСТИКА:
+• Абзацев: ${(text.match(/\n\s*\n/g) || []).length + 1}
+• Предложений: ${(text.match(/[.!?]+/g) || []).length}
+• Средняя длина предложения: ${Math.round(text.split(/[.!?]+/).filter(s => s.trim()).reduce((a, b) => a + b.split(/\s+/).length, 0) / (text.split(/[.!?]+/).filter(s => s.trim()).length || 1))} слов
+==============================================
+
+Конец отчета | Audio Transcriber Pro`;
+            
+            const filename = `structured_report_${selectedFile ? selectedFile.name.replace(/\.[^/.]+$/, "") : new Date().toISOString().slice(0,10)}.doc`;
+            const blob = new Blob([structured], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showMessage('📊 Структурированный отчет скачивается...', 'success');
+        });
+        
+        // Копировать текст в буфер обмена
+        copyBtn.addEventListener('click', async () => {
+            const text = resultText.value;
+            if (!text.trim()) {
+                showMessage('Нет текста для копирования', 'error');
+                return;
+            }
+            
+            try {
+                await navigator.clipboard.writeText(text);
+                showMessage('📋 Текст скопирован в буфер обмена!', 'success');
+            } catch (err) {
+                // Fallback для старых браузеров
+                resultText.select();
+                document.execCommand('copy');
+                showMessage('📋 Текст скопирован (старый метод)', 'success');
+            }
+        });
+        
+        // Для iOS: предложение добавить на домашний экран
+        if (('standalone' in window.navigator) || 
+            (window.matchMedia('(display-mode: standalone)').matches)) {
+            // Уже установлено как PWA
+        } else if (/iPhone|iPad|iPod/.test(navigator.userAgent) && !window.MSStream) {
+            setTimeout(() => {
+                if (localStorage.getItem('pwaPrompt') !== 'shown') {
+                    showMessage('💡 Добавьте это приложение на домашний экран для быстрого доступа!', 'info');
+                    localStorage.setItem('pwaPrompt', 'shown');
+                }
+            }, 5000);
+        }
+        
+        // Сохраняем настройки API
+        document.getElementById('apiUrl').addEventListener('change', function() {
+            localStorage.setItem('audioTranscriber_apiUrl', this.value);
+        });
+        
+        document.getElementById('apiToken').addEventListener('change', function() {
+            localStorage.setItem('audioTranscriber_apiToken', this.value);
+        });
+        
+        // Восстанавливаем настройки при загрузке
+        window.addEventListener('load', () => {
+            const savedUrl = localStorage.getItem('audioTranscriber_apiUrl');
+            const savedToken = localStorage.getItem('audioTranscriber_apiToken');
+            if (savedUrl) document.getElementById('apiUrl').value = savedUrl;
+            if (savedToken) document.getElementById('apiToken').value = savedToken;
+        });
+    </script>
+</body>
+</html>
