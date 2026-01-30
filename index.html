@@ -86,7 +86,10 @@
             -webkit-appearance: none;
             appearance: none;
         }
-        select { background: white url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23667eea' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e") no-repeat right 15px center; background-size: 20px; }
+        select { 
+            background: white url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23667eea' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e") no-repeat right 15px center; 
+            background-size: 20px; 
+        }
         button {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -176,13 +179,17 @@
             margin: 15px 0;
             border-left: 4px solid #339af0;
         }
-        .api-section input {
-            width: 100%;
+        .api-info {
+            background: #d4edda;
             padding: 10px;
-            margin: 8px 0;
-            border: 1px solid #ccc;
             border-radius: 8px;
-            font-family: monospace;
+            margin: 10px 0;
+            font-size: 13px;
+            color: #155724;
+        }
+        .api-info.error {
+            background: #f8d7da;
+            color: #721c24;
         }
         @media (max-width: 600px) {
             .container {
@@ -201,6 +208,18 @@
         .button-group button {
             flex: 1;
         }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
@@ -211,31 +230,38 @@
             <strong>🎯 Как использовать:</strong><br>
             1. Выберите аудио/видео файл (MP3, WAV, MP4)<br>
             2. Нажмите "НАЧАТЬ ОБРАБОТКУ"<br>
-            3. Получите текст и скачайте файл<br>
-            4. На телефоне: добавьте на главный экран!
+            3. Ждите результат (обычно 30-90 секунд)<br>
+            4. Скачайте текст на компьютер/телефон
+        </div>
+        
+        <div class="api-section">
+            <strong><i class="fas fa-key"></i> API Настройки (автоматически настроены):</strong>
+            <div class="api-info">
+                ✅ API: <strong>Hugging Face Whisper</strong><br>
+                ✅ Токен: <strong>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</strong><br>
+                ✅ Модель: <strong>whisper-large-v3</strong> (лучшая)<br>
+                ✅ URL: <strong>https://api-inference.huggingface.co/models/openai/whisper-large-v3</strong>
+            </div>
+            <small style="color: #666;">
+                Используется реальный Whisper API. Файлы отправляются в Hugging Face для обработки.
+            </small>
         </div>
         
         <div class="upload-area" id="uploadArea">
             <i class="fas fa-cloud-upload-alt upload-icon"></i>
             <div class="upload-text">Нажмите или перетащите файл</div>
-            <div class="file-info">MP3, WAV, M4A, MP4 (до 100MB)</div>
+            <div class="file-info">MP3, WAV, M4A, MP4 (до 25MB для быстрой обработки)</div>
             <input type="file" id="fileInput" accept=".mp3,.wav,.m4a,.mp4,.ogg,.flac,.avi,.mov">
         </div>
         
         <div class="settings">
-            <div class="api-section" id="apiSection">
-                <strong><i class="fas fa-key"></i> API Настройки:</strong><br>
-                <small>Оставьте пустым для демо-режима</small>
-                <input type="text" id="apiUrl" placeholder="URL вашего сервера (например: https://ваш-сервер.ру/api/transcribe)">
-                <input type="text" id="apiToken" placeholder="API токен (если нужен)">
-            </div>
-            
             <label for="model"><strong>Качество распознавания:</strong></label>
             <select id="model">
-                <option value="tiny">⚡ Быстрое (tiny)</option>
-                <option value="small" selected>🎯 Точное (small)</option>
-                <option value="medium">🏆 Максимальное (medium)</option>
-                <option value="large">🏆 Лучшее (large)</option>
+                <option value="openai/whisper-tiny">⚡ Быстрое (tiny) - 75MB</option>
+                <option value="openai/whisper-base">⚡ Быстрое (base) - 142MB</option>
+                <option value="openai/whisper-small" selected>🎯 Точное (small) - 466MB</option>
+                <option value="openai/whisper-medium">🏆 Максимальное (medium) - 1.5GB</option>
+                <option value="openai/whisper-large-v3">🏆 Лучшее (large-v3) - 2.9GB</option>
             </select>
             
             <label for="language"><strong>Язык:</strong></label>
@@ -279,16 +305,21 @@
         
         <footer>
             <p><strong>Audio Transcriber Pro v1.0</strong></p>
-            <p>Использует OpenAI Whisper • Работает в браузере</p>
-            <p><i class="fas fa-mobile-alt"></i> Для добавления на главный экран: Поделиться → "На экран 'Домой'"</p>
+            <p>Использует OpenAI Whisper через Hugging Face API</p>
+            <p><i class="fas fa-mobile-alt"></i> Для iOS: Поделиться → "На экран 'Домой'"</p>
             <p style="margin-top: 10px; font-size: 12px; color: #999;">
-                <i class="fas fa-info-circle"></i> Демо-режим. Для реальной работы настройте API
+                <i class="fas fa-info-circle"></i> Токен действителен до отзыва
             </p>
         </footer>
     </div>
 
     <script>
-        // Элементы интерфейса
+        // ========== КОНСТАНТЫ API ==========
+        const HF_API_TOKEN = "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";
+        const HF_API_URL = "https://api-inference.huggingface.co/models/";
+        const DEFAULT_MODEL = "openai/whisper-large-v3";
+        
+        // ========== ЭЛЕМЕНТЫ ИНТЕРФЕЙСА ==========
         const uploadArea = document.getElementById('uploadArea');
         const fileInput = document.getElementById('fileInput');
         const processBtn = document.getElementById('processBtn');
@@ -297,8 +328,10 @@
         const structuredBtn = document.getElementById('structuredBtn');
         const copyBtn = document.getElementById('copyBtn');
         let selectedFile = null;
+        let currentModel = DEFAULT_MODEL;
         
-        // Показать сообщение
+        // ========== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ==========
+        
         function showMessage(text, type = 'info') {
             const msg = document.getElementById('statusMessage');
             msg.textContent = text;
@@ -311,15 +344,31 @@
             }, 5000);
         }
         
-        // Скрыть сообщение
-        function hideMessage() {
-            document.getElementById('statusMessage').style.display = 'none';
+        function updateProgress(percent) {
+            const progressBar = document.getElementById('progressBar');
+            progressBar.style.width = `${percent}%`;
         }
         
-        // Обработка выбора файла
+        function showProgress(show = true) {
+            const container = document.getElementById('progressContainer');
+            container.style.display = show ? 'block' : 'none';
+            if (!show) updateProgress(0);
+        }
+        
+        function toggleProcessing(state) {
+            processBtn.disabled = state;
+            if (state) {
+                processBtn.innerHTML = '<span class="loading"></span> ОБРАБОТКА...';
+            } else {
+                processBtn.innerHTML = '<i class="fas fa-play"></i> НАЧАТЬ ОБРАБОТКУ';
+            }
+        }
+        
+        // ========== ОБРАБОТКА ФАЙЛОВ ==========
+        
         function handleFileSelect(file) {
-            if (file.size > 100 * 1024 * 1024) {
-                showMessage('Файл слишком большой (максимум 100MB)', 'error');
+            if (file.size > 25 * 1024 * 1024) {
+                showMessage('Файл слишком большой (максимум 25MB)', 'error');
                 return;
             }
             
@@ -359,7 +408,39 @@
             }
         });
         
-        // Обработка аудио
+        // ========== ОСНОВНАЯ ОБРАБОТКА ==========
+        
+        async function transcribeWithHuggingFace(audioFile, model, language) {
+            const formData = new FormData();
+            formData.append('file', audioFile);
+            
+            const params = new URLSearchParams();
+            if (language && language !== '') {
+                params.append('language', language);
+            }
+            
+            const url = `${HF_API_URL}${model}`;
+            if (params.toString()) {
+                url += `?${params.toString()}`;
+            }
+            
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${HF_API_TOKEN}`,
+                    'Accept': 'application/json'
+                },
+                body: audioFile
+            });
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Hugging Face API ошибка: ${response.status} - ${errorText}`);
+            }
+            
+            return await response.json();
+        }
+        
         processBtn.addEventListener('click', async () => {
             if (!selectedFile) {
                 showMessage('❌ Сначала выберите файл', 'error');
@@ -368,125 +449,88 @@
             
             const model = document.getElementById('model').value;
             const language = document.getElementById('language').value;
-            const apiUrl = document.getElementById('apiUrl').value.trim();
-            const apiToken = document.getElementById('apiToken').value.trim();
+            currentModel = model;
             
-            // Показываем прогресс
-            processBtn.disabled = true;
-            processBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ОБРАБОТКА...';
-            document.getElementById('progressContainer').style.display = 'block';
-            const progressBar = document.getElementById('progressBar');
-            
-            // Имитация прогресса
-            let progress = 0;
-            const progressInterval = setInterval(() => {
-                progress += Math.random() * 10;
-                if (progress > 90) progress = 90;
-                progressBar.style.width = `${progress}%`;
-            }, 300);
-            
-            showMessage('⏳ Обработка файла... Это может занять несколько минут', 'info');
+            // Начинаем обработку
+            toggleProcessing(true);
+            showProgress(true);
+            showMessage('⏳ Отправляю файл в Hugging Face API...', 'info');
+            updateProgress(10);
             
             try {
-                let resultTextContent = '';
+                // 1. Загрузка файла
+                showMessage('📤 Загружаю файл на сервер...', 'info');
+                updateProgress(30);
                 
-                // ЕСЛИ УКАЗАН API URL - используем реальный API
-                if (apiUrl) {
-                    showMessage('📡 Подключаюсь к серверу...', 'info');
-                    
-                    const formData = new FormData();
-                    formData.append('audio', selectedFile);
-                    formData.append('model', model);
-                    formData.append('language', language);
-                    
-                    const headers = {};
-                    if (apiToken) {
-                        headers['Authorization'] = `Bearer ${apiToken}`;
-                    }
-                    
-                    const response = await fetch(apiUrl, {
-                        method: 'POST',
-                        body: formData,
-                        headers: headers
-                    });
-                    
-                    if (!response.ok) {
-                        throw new Error(`Ошибка сервера: ${response.status} - ${await response.text()}`);
-                    }
-                    
-                    const data = await response.json();
-                    resultTextContent = data.text || data.transcription || JSON.stringify(data, null, 2);
-                    
+                // 2. Отправка в API
+                showMessage('🎧 Начинаю транскрибацию... (это может занять 30-90 секунд)', 'info');
+                updateProgress(50);
+                
+                // Имитация прогресса, пока идет обработка на сервере
+                const progressInterval = setInterval(() => {
+                    updateProgress(Math.min(90, (currentProgress) => currentProgress + 5));
+                }, 2000);
+                
+                // Реальный запрос к Hugging Face
+                const result = await transcribeWithHuggingFace(selectedFile, model, language);
+                
+                clearInterval(progressInterval);
+                updateProgress(95);
+                
+                // 3. Обработка результата
+                let transcribedText = '';
+                
+                if (result.error) {
+                    // Ошибка от API
+                    throw new Error(result.error);
+                } else if (result.text) {
+                    // Успешный ответ
+                    transcribedText = result.text;
+                } else if (result[0] && result[0].generated_text) {
+                    // Альтернативный формат ответа
+                    transcribedText = result[0].generated_text;
                 } else {
-                    // ДЕМО-РЕЖИМ
-                    await new Promise(resolve => setTimeout(resolve, 3000));
-                    
-                    // Пример результата с улучшенным текстом
-                    resultTextContent = `[ДЕМО-РЕЖИМ - РЕЗУЛЬТАТ ТРАНСКРИБАЦИИ]
-
-Файл: "${selectedFile.name}"
-Дата обработки: ${new Date().toLocaleDateString('ru-RU')}
-Модель: ${model.toUpperCase()}
-Язык: ${language || 'автоопределение'}
-
-📋 РАСПОЗНАННЫЙ ТЕКСТ:
-
-Добрый день! Сегодня мы обсуждаем важные темы цифровой трансформации.
-
-Основные направления:
-1. Внедрение искусственного интеллекта
-2. Автоматизация бизнес-процессов
-3. Облачные технологии
-4. Аналитика данных
-
-Ключевые выводы:
-• Цифровизация увеличивает эффективность на 40-60%
-• Важно обучать сотрудников новым технологиям
-• Поэтапное внедрение дает лучшие результаты
-
-Рекомендации:
-- Начните с аудита текущих процессов
-- Определите приоритетные направления
-- Выберите пилотный проект
-- Измеряйте результаты на каждом этапе
-
-💡 Помните: успешная трансформация требует времени, но окупается многократно.
-
-Это демонстрация работы транскрибатора. Для реальной обработки настройте API сервер.
-
----
-Audio Transcriber Pro | ${new Date().getFullYear()} | Демо-версия`;
+                    // Неизвестный формат
+                    transcribedText = JSON.stringify(result, null, 2);
                 }
                 
-                // Показываем результат
-                clearInterval(progressInterval);
-                progressBar.style.width = '100%';
+                // 4. Показываем результат
+                updateProgress(100);
+                showMessage('✅ Транскрибация завершена успешно!', 'success');
                 
                 setTimeout(() => {
-                    resultText.value = resultTextContent;
+                    resultText.value = transcribedText;
                     document.getElementById('resultArea').style.display = 'block';
-                    showMessage('✅ Обработка завершена!', 'success');
-                    processBtn.disabled = false;
-                    processBtn.innerHTML = '<i class="fas fa-play"></i> НАЧАТЬ ОБРАБОТКУ';
-                    document.getElementById('progressContainer').style.display = 'none';
-                    progressBar.style.width = '0%';
                     
-                    // Прокручиваем к результату
-                    document.getElementById('resultArea').scrollIntoView({ behavior: 'smooth' });
+                    // Автопрокрутка к результату
+                    document.getElementById('resultArea').scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'start' 
+                    });
+                    
+                    // Завершаем
+                    toggleProcessing(false);
+                    showProgress(false);
+                    
+                    // Сохраняем в историю
+                    saveToHistory(selectedFile.name, transcribedText);
                 }, 500);
                 
             } catch (error) {
-                clearInterval(progressInterval);
+                console.error('Ошибка транскрибации:', error);
                 showMessage(`❌ Ошибка: ${error.message}`, 'error');
-                processBtn.disabled = false;
-                processBtn.innerHTML = '<i class="fas fa-play"></i> НАЧАТЬ ОБРАБОТКУ';
-                document.getElementById('progressContainer').style.display = 'none';
-                progressBar.style.width = '0%';
-                console.error('Ошибка обработки:', error);
+                toggleProcessing(false);
+                showProgress(false);
+                
+                // Показываем детали ошибки
+                if (error.message.includes('503') || error.message.includes('loading')) {
+                    showMessage('⚠️ Модель загружается на сервере. Попробуйте через 30 секунд или выберите другую модель.', 'info');
+                }
             }
         });
         
-        // Скачать текст как TXT
+        // ========== ФУНКЦИИ ДЛЯ РЕЗУЛЬТАТА ==========
+        
         downloadBtn.addEventListener('click', () => {
             const text = resultText.value;
             if (!text.trim()) {
@@ -508,7 +552,6 @@ Audio Transcriber Pro | ${new Date().getFullYear()} | Демо-версия`;
             showMessage('📥 Файл скачивается...', 'success');
         });
         
-        // Структурированный отчет
         structuredBtn.addEventListener('click', () => {
             const text = resultText.value;
             if (!text.trim()) {
@@ -516,28 +559,32 @@ Audio Transcriber Pro | ${new Date().getFullYear()} | Демо-версия`;
                 return;
             }
             
-            // Создаем структурированный отчет
             const structured = `==============================================
-📋 СТРУКТУРИРОВАННЫЙ ОТЧЕТ
+📋 СТРУКТУРИРОВАННЫЙ ОТЧЕТ - Audio Transcriber Pro
 ==============================================
 Файл: ${selectedFile ? selectedFile.name : 'Неизвестный файл'}
 Дата: ${new Date().toLocaleDateString('ru-RU')}
 Время: ${new Date().toLocaleTimeString('ru-RU')}
-Длина текста: ${text.length} символов, ${text.split(/\s+/).length} слов
+Модель: ${currentModel.split('/').pop()}
+Язык: ${document.getElementById('language').value || 'авто'}
 ==============================================
 
 ${text}
 
 ==============================================
 📊 СТАТИСТИКА:
+• Символов: ${text.length}
+• Слов: ${text.split(/\s+/).length}
 • Абзацев: ${(text.match(/\n\s*\n/g) || []).length + 1}
 • Предложений: ${(text.match(/[.!?]+/g) || []).length}
-• Средняя длина предложения: ${Math.round(text.split(/[.!?]+/).filter(s => s.trim()).reduce((a, b) => a + b.split(/\s+/).length, 0) / (text.split(/[.!?]+/).filter(s => s.trim()).length || 1))} слов
 ==============================================
 
-Конец отчета | Audio Transcriber Pro`;
+Сгенерировано Audio Transcriber Pro
+Использован API: Hugging Face Whisper
+Токен: ${HF_API_TOKEN.substring(0, 10)}...${HF_API_TOKEN.substring(HF_API_TOKEN.length - 6)}
+==============================================`;
             
-            const filename = `structured_report_${selectedFile ? selectedFile.name.replace(/\.[^/.]+$/, "") : new Date().toISOString().slice(0,10)}.doc`;
+            const filename = `structured_report_${selectedFile ? selectedFile.name.replace(/\.[^/.]+$/, "") : new Date().toISOString().slice(0,10)}.txt`;
             const blob = new Blob([structured], { type: 'text/plain;charset=utf-8' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -551,7 +598,6 @@ ${text}
             showMessage('📊 Структурированный отчет скачивается...', 'success');
         });
         
-        // Копировать текст в буфер обмена
         copyBtn.addEventListener('click', async () => {
             const text = resultText.value;
             if (!text.trim()) {
@@ -566,11 +612,34 @@ ${text}
                 // Fallback для старых браузеров
                 resultText.select();
                 document.execCommand('copy');
-                showMessage('📋 Текст скопирован (старый метод)', 'success');
+                showMessage('📋 Текст скопирован', 'success');
             }
         });
         
-        // Для iOS: предложение добавить на домашний экран
+        // ========== ИСТОРИЯ И СОХРАНЕНИЕ ==========
+        
+        function saveToHistory(filename, text) {
+            try {
+                const history = JSON.parse(localStorage.getItem('transcriptionHistory') || '[]');
+                history.unshift({
+                    filename: filename,
+                    date: new Date().toISOString(),
+                    model: currentModel,
+                    text: text.substring(0, 500) + (text.length > 500 ? '...' : ''),
+                    fullTextLength: text.length
+                });
+                
+                // Храним только последние 10 записей
+                if (history.length > 10) history.length = 10;
+                
+                localStorage.setItem('transcriptionHistory', JSON.stringify(history));
+            } catch (e) {
+                console.log('Не удалось сохранить в историю:', e);
+            }
+        }
+        
+        // ========== ДЛЯ IOS PWA ==========
+        
         if (('standalone' in window.navigator) || 
             (window.matchMedia('(display-mode: standalone)').matches)) {
             // Уже установлено как PWA
@@ -580,24 +649,48 @@ ${text}
                     showMessage('💡 Добавьте это приложение на домашний экран для быстрого доступа!', 'info');
                     localStorage.setItem('pwaPrompt', 'shown');
                 }
-            }, 5000);
+            }, 3000);
         }
         
-        // Сохраняем настройки API
-        document.getElementById('apiUrl').addEventListener('change', function() {
-            localStorage.setItem('audioTranscriber_apiUrl', this.value);
-        });
+        // ========== ПРОВЕРКА API ==========
         
-        document.getElementById('apiToken').addEventListener('change', function() {
-            localStorage.setItem('audioTranscriber_apiToken', this.value);
-        });
+        async function checkAPIStatus() {
+            try {
+                const response = await fetch(`${HF_API_URL}openai/whisper-tiny`, {
+                    headers: {
+                        'Authorization': `Bearer ${HF_API_TOKEN}`
+                    }
+                });
+                
+                if (response.status === 401 || response.status === 403) {
+                    document.querySelector('.api-info').innerHTML = `
+                        ❌ <strong>Ошибка авторизации API</strong><br>
+                        Токен недействителен или недостаточно прав<br>
+                        Проверьте токен в <a href="https://huggingface.co/settings/tokens" target="_blank" style="color: #721c24;">настройках Hugging Face</a>
+                    `;
+                    document.querySelector('.api-info').className = 'api-info error';
+                }
+            } catch (error) {
+                // Игнорируем ошибки проверки
+            }
+        }
         
-        // Восстанавливаем настройки при загрузке
+        // Проверяем API при загрузке
         window.addEventListener('load', () => {
-            const savedUrl = localStorage.getItem('audioTranscriber_apiUrl');
-            const savedToken = localStorage.getItem('audioTranscriber_apiToken');
-            if (savedUrl) document.getElementById('apiUrl').value = savedUrl;
-            if (savedToken) document.getElementById('apiToken').value = savedToken;
+            checkAPIStatus();
+            
+            // Восстанавливаем последний файл из localStorage
+            const lastFile = localStorage.getItem('lastSelectedFile');
+            if (lastFile) {
+                // Можно добавить восстановление последней сессии
+            }
+        });
+        
+        // Сохраняем выбор файла
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files[0]) {
+                localStorage.setItem('lastSelectedFile', fileInput.files[0].name);
+            }
         });
     </script>
 </body>
