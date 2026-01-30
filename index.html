@@ -172,13 +172,6 @@
             font-size: 14px;
             border-left: 4px solid #ffc107;
         }
-        .api-section {
-            background: #e7f5ff;
-            padding: 15px;
-            border-radius: 10px;
-            margin: 15px 0;
-            border-left: 4px solid #339af0;
-        }
         .api-info {
             background: #d4edda;
             padding: 10px;
@@ -208,7 +201,7 @@
         .button-group button {
             flex: 1;
         }
-        .loading {
+        .loading-spinner {
             display: inline-block;
             width: 20px;
             height: 20px;
@@ -220,6 +213,11 @@
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
+        .model-info {
+            font-size: 12px;
+            color: #666;
+            margin-left: 10px;
+        }
     </style>
 </head>
 <body>
@@ -230,38 +228,32 @@
             <strong>🎯 Как использовать:</strong><br>
             1. Выберите аудио/видео файл (MP3, WAV, MP4)<br>
             2. Нажмите "НАЧАТЬ ОБРАБОТКУ"<br>
-            3. Ждите результат (обычно 30-90 секунд)<br>
-            4. Скачайте текст на компьютер/телефон
+            3. Ждите результат (30-90 секунд)<br>
+            4. Скачайте текст на устройство
         </div>
         
-        <div class="api-section">
-            <strong><i class="fas fa-key"></i> API Настройки (автоматически настроены):</strong>
-            <div class="api-info">
-                ✅ API: <strong>Hugging Face Whisper</strong><br>
-                ✅ Токен: <strong>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</strong><br>
-                ✅ Модель: <strong>whisper-large-v3</strong> (лучшая)<br>
-                ✅ URL: <strong>https://router.huggingface.co/hf-inference/models/openai/whisper-large-v3</strong>
-            </div>
-            <small style="color: #666;">
-                Используется реальный Whisper API. Файлы отправляются в Hugging Face для обработки.
-            </small>
+        <div class="api-info">
+            ✅ <strong>API настроен и готов к работе</strong><br>
+            🔐 Токен: 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<br>
+            🌐 URL: https://api-inference.huggingface.co/models/<br>
+            ⚡ Модель: whisper-small (рекомендуется)
         </div>
         
         <div class="upload-area" id="uploadArea">
             <i class="fas fa-cloud-upload-alt upload-icon"></i>
             <div class="upload-text">Нажмите или перетащите файл</div>
-            <div class="file-info">MP3, WAV, M4A, MP4 (до 25MB для быстрой обработки)</div>
-            <input type="file" id="fileInput" accept=".mp3,.wav,.m4a,.mp4,.ogg,.flac,.avi,.mov">
+            <div class="file-info">MP3, WAV, M4A, MP4 (до 25MB)</div>
+            <input type="file" id="fileInput" accept=".mp3,.wav,.m4a,.mp4,.ogg,.flac">
         </div>
         
         <div class="settings">
-            <label for="model"><strong>Качество распознавания:</strong></label>
+            <label for="model"><strong>Модель распознавания:</strong></label>
             <select id="model">
-                <option value="openai/whisper-tiny">⚡ Быстрое (tiny) - 75MB</option>
-                <option value="openai/whisper-base">⚡ Быстрое (base) - 142MB</option>
-                <option value="openai/whisper-small" selected>🎯 Точное (small) - 466MB</option>
-                <option value="openai/whisper-medium">🏆 Максимальное (medium) - 1.5GB</option>
-                <option value="openai/whisper-large-v3">🏆 Лучшее (large-v3) - 2.9GB</option>
+                <option value="openai/whisper-tiny">⚡ Tiny (75MB) - очень быстро</option>
+                <option value="openai/whisper-base">⚡ Base (142MB) - быстро</option>
+                <option value="openai/whisper-small" selected>🎯 Small (466MB) - рекомендуется</option>
+                <option value="openai/whisper-medium">🏆 Medium (1.5GB) - качественно</option>
+                <option value="openai/whisper-large">🏆 Large (2.9GB) - лучшее качество</option>
             </select>
             
             <label for="language"><strong>Язык:</strong></label>
@@ -269,8 +261,6 @@
                 <option value="ru" selected>🇷🇺 Русский</option>
                 <option value="en">🇺🇸 Английский</option>
                 <option value="uk">🇺🇦 Украинский</option>
-                <option value="de">🇩🇪 Немецкий</option>
-                <option value="fr">🇫🇷 Французский</option>
                 <option value="">🌍 Автоопределение</option>
             </select>
         </div>
@@ -306,18 +296,17 @@
         <footer>
             <p><strong>Audio Transcriber Pro v1.0</strong></p>
             <p>Использует OpenAI Whisper через Hugging Face API</p>
-            <p><i class="fas fa-mobile-alt"></i> Для iOS: Поделиться → "На экран 'Домой'"</p>
+            <p><i class="fas fa-mobile-alt"></i> Для iOS: Safari → Поделиться → "На экран 'Домой'"</p>
             <p style="margin-top: 10px; font-size: 12px; color: #999;">
-                <i class="fas fa-info-circle"></i> Токен действителен до отзыва
+                <i class="fas fa-info-circle"></i> Токен действителен до отзыва. Для вопросов: support@example.com
             </p>
         </footer>
     </div>
 
     <script>
         // ========== КОНСТАНТЫ API ==========
-        const HF_API_TOKEN = "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";
-        const HF_API_URL = "https://router.huggingface.co/hf-inference/models/";
-        const DEFAULT_MODEL = "openai/whisper-large-v3";
+        const HF_API_TOKEN = "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";
+        const HF_API_URL = "https://api-inference.huggingface.co/models/";
         
         // ========== ЭЛЕМЕНТЫ ИНТЕРФЕЙСА ==========
         const uploadArea = document.getElementById('uploadArea');
@@ -328,7 +317,7 @@
         const structuredBtn = document.getElementById('structuredBtn');
         const copyBtn = document.getElementById('copyBtn');
         let selectedFile = null;
-        let currentModel = DEFAULT_MODEL;
+        let currentModel = "openai/whisper-small";
         
         // ========== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ==========
         
@@ -358,7 +347,7 @@
         function toggleProcessing(state) {
             processBtn.disabled = state;
             if (state) {
-                processBtn.innerHTML = '<span class="loading"></span> ОБРАБОТКА...';
+                processBtn.innerHTML = '<span class="loading-spinner"></span> ОБРАБОТКА...';
             } else {
                 processBtn.innerHTML = '<i class="fas fa-play"></i> НАЧАТЬ ОБРАБОТКУ';
             }
@@ -376,7 +365,7 @@
             uploadArea.innerHTML = `
                 <i class="fas fa-check-circle upload-icon" style="color:#28a745"></i>
                 <div class="upload-text">${file.name}</div>
-                <div class="file-info">${(file.size / (1024*1024)).toFixed(2)} MB • ${file.type || 'аудио/видео'} • Готов к обработке</div>
+                <div class="file-info">${(file.size / (1024*1024)).toFixed(2)} MB • ${file.type || 'аудио'} • Готов к обработке</div>
             `;
             showMessage('✅ Файл выбран. Нажмите "НАЧАТЬ ОБРАБОТКУ"', 'success');
         }
@@ -411,34 +400,48 @@
         // ========== ОСНОВНАЯ ОБРАБОТКА ==========
         
         async function transcribeWithHuggingFace(audioFile, model, language) {
-            const formData = new FormData();
-            formData.append('file', audioFile);
+            const url = `${HF_API_URL}${model}`;
             
+            const headers = {
+                'Authorization': `Bearer ${HF_API_TOKEN}`,
+                'Content-Type': 'application/octet-stream'
+            };
+            
+            // Добавляем параметры языка если указан
             const params = new URLSearchParams();
             if (language && language !== '') {
                 params.append('language', language);
             }
             
-            const url = `${HF_API_URL}${model}`;
-            if (params.toString()) {
-                url += `?${params.toString()}`;
-            }
+            const fullUrl = params.toString() ? `${url}?${params.toString()}` : url;
             
-            const response = await fetch(url, {
+            // Конвертируем файл в ArrayBuffer
+            const arrayBuffer = await audioFile.arrayBuffer();
+            
+            const response = await fetch(fullUrl, {
                 method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${HF_API_TOKEN}`,
-                    'Accept': 'application/json'
-                },
-                body: audioFile
+                headers: headers,
+                body: arrayBuffer
             });
             
             if (!response.ok) {
                 const errorText = await response.text();
-                throw new Error(`Hugging Face API ошибка: ${response.status} - ${errorText}`);
+                let errorMessage = `Ошибка API: ${response.status}`;
+                
+                try {
+                    const errorJson = JSON.parse(errorText);
+                    if (errorJson.error) {
+                        errorMessage = errorJson.error;
+                    }
+                } catch (e) {
+                    // Если не JSON, используем текст как есть
+                }
+                
+                throw new Error(errorMessage);
             }
             
-            return await response.json();
+            const result = await response.json();
+            return result;
         }
         
         processBtn.addEventListener('click', async () => {
@@ -454,47 +457,44 @@
             // Начинаем обработку
             toggleProcessing(true);
             showProgress(true);
-            showMessage('⏳ Отправляю файл в Hugging Face API...', 'info');
+            showMessage('⏳ Подготавливаю файл...', 'info');
             updateProgress(10);
             
             try {
-                // 1. Загрузка файла
-                showMessage('📤 Загружаю файл на сервер...', 'info');
+                // 1. Загрузка и подготовка
+                showMessage('📤 Отправляю файл в Hugging Face API...', 'info');
                 updateProgress(30);
                 
-                // 2. Отправка в API
-                showMessage('🎧 Начинаю транскрибацию... (это может занять 30-90 секунд)', 'info');
-                updateProgress(50);
-                
-                // Имитация прогресса, пока идет обработка на сервере
+                // 2. Имитация прогресса во время обработки
                 const progressInterval = setInterval(() => {
-                    updateProgress(Math.min(90, (currentProgress) => currentProgress + 5));
-                }, 2000);
+                    updateProgress(prev => {
+                        const newProgress = prev + 2;
+                        return newProgress > 90 ? 90 : newProgress;
+                    });
+                }, 1000);
                 
-                // Реальный запрос к Hugging Face
+                // 3. Реальный запрос к API
+                showMessage('🎧 Идет распознавание речи... (30-90 секунд)', 'info');
+                
                 const result = await transcribeWithHuggingFace(selectedFile, model, language);
                 
                 clearInterval(progressInterval);
                 updateProgress(95);
                 
-                // 3. Обработка результата
+                // 4. Обработка результата
                 let transcribedText = '';
                 
                 if (result.error) {
-                    // Ошибка от API
                     throw new Error(result.error);
                 } else if (result.text) {
                     // Успешный ответ
                     transcribedText = result.text;
-                } else if (result[0] && result[0].generated_text) {
-                    // Альтернативный формат ответа
-                    transcribedText = result[0].generated_text;
                 } else {
-                    // Неизвестный формат
+                    // Альтернативный формат ответа
                     transcribedText = JSON.stringify(result, null, 2);
                 }
                 
-                // 4. Показываем результат
+                // 5. Показываем результат
                 updateProgress(100);
                 showMessage('✅ Транскрибация завершена успешно!', 'success');
                 
@@ -518,14 +518,21 @@
                 
             } catch (error) {
                 console.error('Ошибка транскрибации:', error);
-                showMessage(`❌ Ошибка: ${error.message}`, 'error');
+                
+                // Обработка специфических ошибок
+                let userMessage = error.message;
+                
+                if (error.message.includes('503') || error.message.includes('loading')) {
+                    userMessage = 'Модель загружается на сервере. Попробуйте через 30 секунд или выберите другую модель.';
+                } else if (error.message.includes('401') || error.message.includes('403')) {
+                    userMessage = 'Ошибка авторизации. Проверьте токен API.';
+                } else if (error.message.includes('413')) {
+                    userMessage = 'Файл слишком большой. Уменьшите размер или выберите другой файл.';
+                }
+                
+                showMessage(`❌ Ошибка: ${userMessage}`, 'error');
                 toggleProcessing(false);
                 showProgress(false);
-                
-                // Показываем детали ошибки
-                if (error.message.includes('503') || error.message.includes('loading')) {
-                    showMessage('⚠️ Модель загружается на сервере. Попробуйте через 30 секунд или выберите другую модель.', 'info');
-                }
             }
         });
         
@@ -566,7 +573,8 @@
 Дата: ${new Date().toLocaleDateString('ru-RU')}
 Время: ${new Date().toLocaleTimeString('ru-RU')}
 Модель: ${currentModel.split('/').pop()}
-Язык: ${document.getElementById('language').value || 'авто'}
+Язык: ${document.getElementById('language').value || 'автоопределение'}
+Длительность: ${selectedFile ? Math.round(selectedFile.size / (128 * 1024)) : '?'} минут
 ==============================================
 
 ${text}
@@ -579,8 +587,8 @@ ${text}
 • Предложений: ${(text.match(/[.!?]+/g) || []).length}
 ==============================================
 
-Сгенерировано Audio Transcriber Pro
-Использован API: Hugging Face Whisper
+Сгенерировано: Audio Transcriber Pro
+API: Hugging Face Inference
 Токен: ${HF_API_TOKEN.substring(0, 10)}...${HF_API_TOKEN.substring(HF_API_TOKEN.length - 6)}
 ==============================================`;
             
@@ -652,21 +660,22 @@ ${text}
             }, 3000);
         }
         
-        // ========== ПРОВЕРКА API ==========
+        // ========== ПРОВЕРКА API ПРИ ЗАГРУЗКЕ ==========
         
         async function checkAPIStatus() {
             try {
-                const response = await fetch(`${HF_API_URL}openai/whisper-tiny`, {
+                const response = await fetch(`${HF_API_URL}openai/whisper-small`, {
                     headers: {
                         'Authorization': `Bearer ${HF_API_TOKEN}`
-                    }
+                    },
+                    method: 'HEAD'
                 });
                 
                 if (response.status === 401 || response.status === 403) {
                     document.querySelector('.api-info').innerHTML = `
                         ❌ <strong>Ошибка авторизации API</strong><br>
                         Токен недействителен или недостаточно прав<br>
-                        Проверьте токен в <a href="https://huggingface.co/settings/tokens" target="_blank" style="color: #721c24;">настройках Hugging Face</a>
+                        Проверьте токен в настройках Hugging Face
                     `;
                     document.querySelector('.api-info').className = 'api-info error';
                 }
@@ -679,19 +688,30 @@ ${text}
         window.addEventListener('load', () => {
             checkAPIStatus();
             
-            // Восстанавливаем последний файл из localStorage
-            const lastFile = localStorage.getItem('lastSelectedFile');
-            if (lastFile) {
-                // Можно добавить восстановление последней сессии
+            // Восстанавливаем последний выбор модели
+            const savedModel = localStorage.getItem('lastModel');
+            if (savedModel) {
+                document.getElementById('model').value = savedModel;
+                currentModel = savedModel;
             }
         });
         
-        // Сохраняем выбор файла
-        fileInput.addEventListener('change', () => {
-            if (fileInput.files[0]) {
-                localStorage.setItem('lastSelectedFile', fileInput.files[0].name);
-            }
+        // Сохраняем выбор модели
+        document.getElementById('model').addEventListener('change', function() {
+            localStorage.setItem('lastModel', this.value);
+            currentModel = this.value;
         });
+        
+        // Сохраняем выбор языка
+        document.getElementById('language').addEventListener('change', function() {
+            localStorage.setItem('lastLanguage', this.value);
+        });
+        
+        // Восстанавливаем язык
+        const savedLanguage = localStorage.getItem('lastLanguage');
+        if (savedLanguage) {
+            document.getElementById('language').value = savedLanguage;
+        }
     </script>
 </body>
 </html>
